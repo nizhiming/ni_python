@@ -1,3 +1,5 @@
+#!/bin/env/python  
+#filename:ni_compuer.py 
 import re
 import functools
  
