@@ -1,0 +1,15 @@
+<NotepadPlus>
+    <Project name="ni_python">
+        <Folder name="ni_ProjectName">
+            <Folder name="ni_basis_function">
+                <File name="ni_python\ni_projectName\ni_basis_function\ni_computer.py" />
+            </Folder>
+        </Folder>
+        <Folder name="ni_logo" />
+        <Folder name="ni_tests">
+            <File name="ni_python\ni_tests\ni_tests.py" />
+        </Folder>
+        <Folder name="ni_docs" />
+        <File name="ni_python\setup.py" />
+    </Project>
+</NotepadPlus>
