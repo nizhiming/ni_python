@@ -21,10 +21,11 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
 ]
 """
-from . import view
+from . import view,testdb
 
 urlpatterns = [
     url(r'^ni_Web$', view.ni_Web),  #访问:127.0.0.1:8000\ni_Web
     url(r'^$', view.ni_Web),        #访问:127.0.0.1:8000
+    url(r'^testdb$', testdb.testdb),        #访问:127.0.0.1:8000\testdb
 ]
 
