@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 """
 Django settings for ni_Web project.
 
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'TestModel'         # 添加此项
 ]
 
 MIDDLEWARE = [
@@ -75,8 +77,12 @@ WSGI_APPLICATION = 'ni_Web.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql', #和教程不同，教程使用mysl，我使用pymysql3
+        'NAME': 'mysql',#os.path.join(BASE_DIR, 'db.sqlite3'),   #'test',#和教程不同，教程使用'test'
+        'USER':'root',
+        'PASSWORD':'123456',
+        'HOST':'localhost',
+        'PORT':'3306',
     }
 }
 
