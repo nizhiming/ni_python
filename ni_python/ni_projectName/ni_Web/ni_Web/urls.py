@@ -21,11 +21,18 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
 ]
 """
-from . import view,testdb
+from django.contrib import admin
+from . import view,testdb,search,search2
 
 urlpatterns = [
+    url(r'^admin/', admin.site.urls),
     url(r'^ni_Web$', view.ni_Web),  #访问:127.0.0.1:8000\ni_Web
     url(r'^$', view.ni_Web),        #访问:127.0.0.1:8000
-    url(r'^testdb$', testdb.testdb),        #访问:127.0.0.1:8000\testdb
+    url(r'^testdb$', testdb.testdb),            #访问:127.0.0.1:8000\testdb
+
+    url(r'^search-form$', search.search_form),  #访问:127.0.0.1:8000\search-form
+    url(r'^search$', search.search),            #访问:127.0.0.1:8000\search
+    
+    url(r'^search-post$', search2.search_post), #访问:127.0.0.1:8000\search
 ]
 
