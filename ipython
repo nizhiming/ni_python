@@ -4,6 +4,7 @@
             <Folder name="ni_basis_function">
                 <File name="ni_python\ni_projectName\ni_basis_function\ni_computer.py" />
                 <File name="ni_python\ni_projectName\ni_basis_function\ni_pymysql3.py" />
+                <File name="ni_python\ni_projectName\ni_test0.py" />
             </Folder>
             <Folder name="ni_Web">
                 <Folder name="ni_Web">
@@ -13,10 +14,14 @@
                     <File name="ni_python\ni_projectName\ni_Web\ni_Web\view.py" />
                     <File name="ni_python\ni_projectName\ni_Web\ni_Web\wsgi.py" />
                     <File name="ni_python\ni_projectName\ni_Web\ni_Web\testdb.py" />
+                    <File name="ni_python\ni_projectName\ni_Web\ni_Web\search.py" />
+                    <File name="ni_python\ni_projectName\ni_Web\ni_Web\search2.py" />
                 </Folder>
                 <Folder name="ni_templates">
                     <File name="ni_python\ni_projectName\ni_Web\ni_templates\ni_base.html" />
                     <File name="ni_python\ni_projectName\ni_Web\ni_templates\ni_hello.html" />
+                    <File name="ni_python\ni_projectName\ni_Web\ni_templates\search_form.html" />
+                    <File name="ni_python\ni_projectName\ni_Web\ni_templates\post.html" />
                 </Folder>
                 <File name="ni_python\ni_projectName\ni_Web\create recoding.txt" />
                 <File name="ni_python\ni_projectName\ni_Web\db.sqlite3" />
@@ -32,14 +37,6 @@
                     <Folder name="migrations">
                         <File name="ni_python\ni_projectName\ni_Web\TestModel\migrations\__init__.py" />
                     </Folder>
-                </Folder>
-                <Folder name="Test_Model">
-                    <File name="ni_python\ni_projectName\ni_Web\Test_Model\__init__.py" />
-                    <File name="ni_python\ni_projectName\ni_Web\Test_Model\admin.py" />
-                    <File name="ni_python\ni_projectName\ni_Web\Test_Model\apps.py" />
-                    <File name="ni_python\ni_projectName\ni_Web\Test_Model\models.py" />
-                    <File name="ni_python\ni_projectName\ni_Web\Test_Model\tests.py" />
-                    <File name="ni_python\ni_projectName\ni_Web\Test_Model\views.py" />
                 </Folder>
             </Folder>
         </Folder>
