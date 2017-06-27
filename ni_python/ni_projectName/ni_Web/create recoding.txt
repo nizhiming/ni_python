@@ -1,8 +1,464 @@
-﻿20170626：表单：
+﻿
+20170627：django admin 管理工具：
+1.Django 提供了基于 web 的管理工具。
+    Django 自动管理工具是 django.contrib 的一部分。你可以在项目的 settings.py 中的 INSTALLED_APPS 看到它：
+    /HelloWorld/HelloWorld/settings.py 文件代码：
+    INSTALLED_APPS = (
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+    )
+    django.contrib是一套庞大的功能集，它是Django基本代码的组成部分。
+2.激活管理工具
+    通常我们在生成项目时会在 urls.py 中自动设置好，我们只需去掉注释即可。
+    配置项如下所示：
+    /HelloWorld/HelloWorld/urls.py 文件代码：
+    # urls.py
+    from django.conf.urls import url
+    from django.contrib import admin
+     
+    urlpatterns = [
+        url(r'^admin/', admin.site.urls),
+    ]
+    当这一切都配置好后，Django 管理工具就可以运行了。
+3.使用管理工具
+    启动开发服务器，然后在浏览器中访问 http://127.0.0.1:8000/admin/，得到如下界面：Django administration
+
+    你可以通过命令 python manage.py createsuperuser 来创建超级用户，如下所示：
+        # python manage.py createsuperuser
+        Username (leave blank to use 'root'): admin
+        Email address: admin@runoob.com
+        Password:
+        Password (again):
+        Superuser created successfully.
+        [root@solar HelloWorld]#
+    之后输入用户名密码登录，界面如下：site administration
+
+    为了让 admin 界面管理某个数据模型，我们需要先注册该数据模型到 admin。比如，我们之前在 TestModel 中已经创建了模型 Test 。修改 TestModel/admin.py:
+    HelloWorld/TestModel/admin.py: 文件代码：
+        from django.contrib import admin
+        from TestModel.models import Test
+         
+        # Register your models here.
+        admin.site.register(Test)
+    刷新后即可看到 Testmodel 数据表:TESTMODEL Test
+    
+4.复杂模型
+    管理页面的功能强大，完全有能力处理更加复杂的数据模型。
+    先在 TestModel/models.py 中增加一个更复杂的数据模型：
+    HelloWorld/TestModel/models.py: 文件代码：
+    from django.db import models
+     
+    # Create your models here.
+    class Test(models.Model):
+        name = models.CharField(max_length=20)
+     
+    class Contact(models.Model):
+        name   = models.CharField(max_length=200)
+        age    = models.IntegerField(default=0)
+        email  = models.EmailField()
+        def __unicode__(self):
+            return self.name
+     
+    class Tag(models.Model):
+        '''注：此处参数有问题，出现TypeError: __init__() missing 1 required positional argument: 'on_delete'，
+        只有添加一个参数如（Contact，0）才能使用，
+        
+        # 在费了九牛二虎之力之后，在进入Tag类中进行操作仍会出错；最后在看人家有写成user=models.ForeignKey('auth.User',on_delete=models.CASCADE,related_name='info')的代码
+        # 所以就试试了试加上on_delete=models.CASCADE，结果可以，虽然还是不明白，还是把代码写成了：
+        # contact = models.ForeignKey(Contact,on_delete=models.CASCADE)
+        
+        在添加后，需要进行表单改变确认操作：
+        $ python manage.py makemigrations TestModel  # 让 Django 知道我们在我们的模型有一些变更
+        $ python manage.py migrate TestModel   # 创建表结构
+        '''
+        contact = models.ForeignKey(Contact,on_delete=models.CASCADE)
+        name    = models.CharField(max_length=50)
+        def __unicode__(self):
+            return self.name
+    这里有两个表。Tag 以 Contact 为外部键。一个 Contact 可以对应多个 Tag。
+    我们还可以看到许多在之前没有见过的属性类型，比如 IntegerField 用于存储整数。
+
+    在 TestModel/admin.py 注册多个模型并显示：
+    HelloWorld/TestModel/admin.py: 文件代码：
+    from django.contrib import admin
+    from TestModel.models import Test,Contact,Tag
+     
+    # Register your models here.
+    admin.site.register([Test, Contact, Tag])
+    刷新管理页面，显示结果如下：
+
+5.自定义表单
+    我们可以自定义管理页面，来取代默认的页面。比如上面的 "add" 页面。我们想只显示 name 和 email 部分。修改 TestModel/admin.py:
+    HelloWorld/TestModel/admin.py: 文件代码：
+    from django.contrib import admin
+    from TestModel.models import Test,Contact,Tag
+     
+    # Register your models here.
+    class ContactAdmin(admin.ModelAdmin):
+        fields = ('name', 'email')
+     
+    admin.site.register(Contact, ContactAdmin)
+    admin.site.register([Test, Tag])
+    以上代码定义了一个 ContactAdmin 类，用以说明管理页面的显示格式。
+    里面的 fields 属性定义了要显示的字段。
+    由于该类对应的是 Contact 数据模型，我们在注册的时候，需要将它们一起注册。显示效果如下：
+    
+    我们还可以将输入栏分块，每个栏也可以定义自己的格式。修改 TestModel/admin.py为：
+    HelloWorld/TestModel/admin.py: 文件代码：
+    from django.contrib import admin
+    from TestModel.models import Test,Contact,Tag
+     
+    # Register your models here.
+    class ContactAdmin(admin.ModelAdmin):
+        fieldsets = (
+            ['Main',{
+                'fields':('name','email'),
+            }],
+            ['Advance',{
+                'classes': ('collapse',), # CSS
+                'fields': ('age',),
+            }]
+        )
+     
+    admin.site.register(Contact, ContactAdmin)
+    admin.site.register([Test, Tag])
+    上面的栏目分为了 Main 和 Advance 两部分。classes 说明它所在的部分的 CSS 格式。这里让 Advance 部分隐藏：
+
+    Advance 部分旁边有一个 Show 按钮，用于展开，展开后可点击 Hide 将其隐藏，如下图所示：
+
+6.内联（Inline）显示：
+    上面的 Contact 是 Tag 的外部键，所以有外部参考的关系。
+    而在默认的页面显示中，将两者分离开来，无法体现出两者的从属关系。我们可以使用内联显示，让 Tag 附加在 Contact 的编辑页面上显示。
+    修改TestModel/admin.py：
+    HelloWorld/TestModel/admin.py: 文件代码：
+    from django.contrib import admin
+    from TestModel.models import Test,Contact,Tag
+     
+    # Register your models here.
+    class TagInline(admin.TabularInline):
+        model = Tag
+     
+    class ContactAdmin(admin.ModelAdmin):
+        inlines = [TagInline]  # Inline
+        fieldsets = (
+            ['Main',{
+                'fields':('name','email'),
+            }],
+            ['Advance',{
+                'classes': ('collapse',),
+                'fields': ('age',),
+            }]
+     
+        )
+     
+    admin.site.register(Contact, ContactAdmin)
+    admin.site.register([Test])
+    显示效果如下：
+        name: [           ]
+        Email:[           ]
+7.列表页的显示
+    在 Contact 输入数条记录后，Contact 的列表页看起来如下:
+        1
+        2
+        3
+    我们也可以自定义该页面的显示，比如在列表中显示更多的栏目，只需要在 ContactAdmin 中增加 list_display 属性:
+    HelloWorld/TestModel/admin.py: 文件代码：
+    from django.contrib import admin
+    from TestModel.models import Test,Contact,Tag
+     
+    # Register your models here.
+    class TagInline(admin.TabularInline):
+        model = Tag
+     
+    class ContactAdmin(admin.ModelAdmin):
+        list_display = ('name','age', 'email') # list
+        inlines = [TagInline]  # Inline
+        fieldsets = (
+            ['Main',{
+                'fields':('name','email'),
+            }],
+            ['Advance',{
+                'classes': ('collapse',),
+                'fields': ('age',),
+            }]
+     
+        )
+     
+    admin.site.register(Contact, ContactAdmin)
+    admin.site.register([Test])
+    刷新页面显示效果如下：
+        name            age         email
+        1                0            1@xxx.com
+        2                0            2@xxx.com
+        3                1            3@xxx.com
+        
+    搜索功能在管理大量记录时非常有，我们可以使用 search_fields 为该列表页增加搜索栏：
+    HelloWorld/TestModel/admin.py: 文件代码：
+    from django.contrib import admin
+    from TestModel.models import Test,Contact,Tag
+     
+    # Register your models here.
+    class TagInline(admin.TabularInline):
+        model = Tag
+     
+    class ContactAdmin(admin.ModelAdmin):
+        list_display = ('name','age', 'email') # list
+        search_fields = ('name',)
+        inlines = [TagInline]  # Inline
+        fieldsets = (
+            ['Main',{
+                'fields':('name','email'),
+            }],
+            ['Advance',{
+                'classes': ('collapse',),
+                'fields': ('age',),
+            }]
+     
+        )
+     
+    admin.site.register(Contact, ContactAdmin)
+    admin.site.register([Test])
+    在本实例中我们搜索了 name 为 runoob 的记录，显示结果如下：[         ][Search]
+
+    Django Admin 管理工具还有非常多实用的功能，感兴趣的同学可以深入研究下。
+
+    到目前为止，django的教程已经学完，之后是配置实用性的服务器而不是一直用测试用runserver的功能；
+    在管理工具中可以添加英文名数据，但一添加中文名数据时就会出现页面报警，有待研究！
+
+
+
+20170626：表单：
 1、HTTP 请求
     HTTP协议以"请求－回复"的方式工作。客户发送请求时，可以在请求中附加数据。服务器通过解析请求，就可以获得客户传来的数据，并根据URL来提供特定的服务。
 2、GET 方法
     我们在之前的项目中创建一个 search.py 文件，用于接收用户的请求：
+    /HelloWorld/HelloWorld/search.py 文件代码：
+    # -*- coding: utf-8 -*-
+     
+    from django.http import HttpResponse
+    from django.shortcuts import render_to_response
+     
+    # 表单
+    def search_form(request):
+        return render_to_response('search_form.html') #注意名字不要写错
+     
+    # 接收请求数据
+    def search(request):  
+        request.encoding='utf-8'
+        if 'q' in request.GET:
+            message = '你搜索的内容为: ' + request.GET['q']
+        else:
+            message = '你提交了空表单'
+        return HttpResponse(message)
+        
+    在模板目录 templates 中添加 search_form.html 表单：
+    /HelloWorld/templates/search_form.html 文件代码：
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="utf-8">
+    <title>菜鸟教程(runoob.com)</title>
+    </head>
+    <body>
+        <form action="/search" method="get">
+            <input type="text" name="q">
+            <input type="submit" value="搜索">
+        </form>
+    </body>
+    </html>
+    urls.py 规则修改为如下形式：
+    /HelloWorld/HelloWorld/urls.py 文件代码：
+    from django.conf.urls import url
+    from . import view,testdb,search
+     
+    urlpatterns = [
+        url(r'^hello$', view.hello),
+        url(r'^testdb$', testdb.testdb),
+        url(r'^search-form$', search.search_form),
+        url(r'^search$', search.search),
+    ]
+    访问地址 http://127.0.0.1:8000/search-form 并搜索，结果如下所示:[          ]搜索
+
+3、POST方法:
+    上面我们使用了GET方法。视图显示和请求处理分成两个函数处理。
+    提交数据时更常用POST方法。我们下面使用该方法，并用一个URL和处理函数，同时显示视图和处理请求。
+    我们在tmplate 创建 post.html：
+    /HelloWorld/tmplates/post.html 文件代码：
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="utf-8">
+    <title>菜鸟教程(runoob.com)</title>
+    </head>
+    <body>
+        <form action="/search-post" method="post">
+            {% csrf_token %}
+            <input type="text" name="q">
+            <input type="submit" value="Submit">
+        </form>
+     
+        <p>{{ rlt }}</p>
+    </body>
+    </html>
+    在模板的末尾，我们增加一个 rlt 记号，为表格处理结果预留位置。
+    表格后面还有一个{% csrf_token %}的标签。csrf 全称是 Cross Site Request Forgery。这是Django提供的防止伪装提交请求的功能。POST 方法提交的表格，必须有此标签。
+    在HelloWorld目录下新建 search2.py 文件并使用 search_post 函数来处理 POST 请求：
+    /HelloWorld/HelloWorld/search2.py 文件代码：
+    # -*- coding: utf-8 -*-
+     
+    from django.shortcuts import render
+    from django.views.decorators import csrf
+     
+    # 接收POST请求数据
+    def search_post(request):
+        ctx ={}
+        if request.POST:
+            ctx['rlt'] = request.POST['q']
+        return render(request, "post.html", ctx)
+    urls.py 规则修改为如下形式：
+    /HelloWorld/HelloWorld/urls.py 文件代码：
+    from django.conf.urls import url
+    from . import view,testdb,search,search2    # 别忘了此处添加rearch2
+     
+    urlpatterns = [
+        url(r'^hello$', view.hello),
+        url(r'^testdb$', testdb.testdb),
+        url(r'^search-form$', search.search_form),
+        url(r'^search$', search.search),
+        url(r'^search-post$', search2.search_post),
+    ]
+    访问 http://127.0.0.1:8000/search-post 显示结果如下：
+    [    小明   ]搜索
+        小明
+
+4、Request对象：
+    每个 view 函数的第一个参数是一个 HttpRequest 对象，就像下面这个 hello() 函数:
+    
+    from django.http import HttpResponse
+
+    def hello(request):
+        return HttpResponse("Hello world")
+    
+    HttpRequest对象包含当前请求URL的一些信息：
+    属性        描述
+    
+    path        请求页面的全路径,不包括域名—例如, "/hello/"。
+    
+    method      请求中使用的HTTP方法的字符串表示。全大写表示。例如:
+    
+                if request.method == 'GET':
+                    do_something()
+                elif request.method == 'POST':
+                    do_something_else()
+    GET         包含所有HTTP GET参数的类字典对象。参见QueryDict 文档。
+    
+    POST        包含所有HTTP POST参数的类字典对象。参见QueryDict 文档。
+                服务器收到空的POST请求的情况也是有可能发生的。也就是说，表单form通过HTTP POST方法提交请求，但是表单中可以没有数据。因此，不能使用语句if request.POST来判断是否使用HTTP POST方法；应该使用if request.method == "POST" (参见本表的method属性)。
+                注意: POST不包括file-upload信息。参见FILES属性。
+    REQUEST     为了方便，该属性是POST和GET属性的集合体，但是有特殊性，先查找POST属性，然后再查找GET属性。借鉴PHP's $_REQUEST。
+                例如，如果GET = {"name": "john"} 和POST = {"age": '34'},则 REQUEST["name"] 的值是"john", REQUEST["age"]的值是"34".
+                强烈建议使用GET and POST,因为这两个属性更加显式化，写出的代码也更易理解。
+    COOKIES     包含所有cookies的标准Python字典对象。Keys和values都是字符串。参见第12章，有关于cookies更详细的讲解。
+    FILES       包含所有上传文件的类字典对象。FILES中的每个Key都是<input type="file" name="" />标签中name属性的值. FILES中的每个value 同时也是一个标准Python字典对象，包含下面三个Keys:
+                filename: 上传文件名,用Python字符串表示
+                content-type: 上传文件的Content type
+                content: 上传文件的原始内容
+                注意：只有在请求方法是POST，并且请求页面中<form>有enctype="multipart/form-data"属性时FILES才拥有数据。否则，FILES 是一个空字典。
+                
+    META        包含所有可用HTTP头部信息的字典。 例如:
+                CONTENT_LENGTH
+                CONTENT_TYPE
+                QUERY_STRING: 未解析的原始查询字符串
+                REMOTE_ADDR: 客户端IP地址
+                REMOTE_HOST: 客户端主机名
+                SERVER_NAME: 服务器主机名
+                SERVER_PORT: 服务器端口
+                META 中这些头加上前缀HTTP_最为Key, 例如:
+                HTTP_ACCEPT_ENCODING
+                HTTP_ACCEPT_LANGUAGE
+                HTTP_HOST: 客户发送的HTTP主机头信息
+                HTTP_REFERER: referring页
+                HTTP_USER_AGENT: 客户端的user-agent字符串
+                HTTP_X_BENDER: X-Bender头信息
+                
+    user        是一个django.contrib.auth.models.User 对象，代表当前登录的用户。
+                如果访问用户当前没有登录，user将被初始化为django.contrib.auth.models.AnonymousUser的实例。
+                你可以通过user的is_authenticated()方法来辨别用户是否登录：
+                if request.user.is_authenticated():
+                    # Do something for logged-in users.
+                else:
+                    # Do something for anonymous users.
+                只有激活Django中的AuthenticationMiddleware时该属性才可用
+    session     唯一可读写的属性，代表当前会话的字典对象。只有激活Django中的session支持时该属性才可用。 参见第12章。
+    
+    raw_post_data 原始HTTP POST数据，未解析过。 高级处理时会有用处。
+    
+    Request对象也有一些有用的方法：
+    
+    方法                  描述
+    __getitem__(key)    返回GET/POST的键值,先取POST,后取GET。如果键不存在抛出 KeyError。 
+                        这是我们可以使用字典语法访问HttpRequest对象。 
+                        例如,request["foo"]等同于先request.POST["foo"] 然后 request.GET["foo"]的操作。
+    has_key()           检查request.GET or request.POST中是否包含参数指定的Key。
+    get_full_path()     返回包含查询字符串的请求路径。例如， "/music/bands/the_beatles/?print=true"
+    is_secure()         如果请求是安全的，返回True，就是说，发出的是HTTPS请求。
+
+    
+5、QueryDict对象
+    在HttpRequest对象中, GET和POST属性是django.http.QueryDict类的实例。
+    QueryDict类似字典的自定义类，用来处理单键对应多值的情况。
+    QueryDict实现所有标准的词典方法。还包括一些特有的方法：
+    方法              描述
+    __getitem__     和标准字典的处理有一点不同，就是，如果Key对应多个Value，__getitem__()返回最后一个value。
+    __setitem__     设置参数指定key的value列表(一个Python list)。注意：它只能在一个mutable QueryDict 对象上被调用(就是通过copy()产生的一个QueryDict对象的拷贝).
+    get()           如果key对应多个value，get()返回最后一个value。
+    update()        参数可以是QueryDict，也可以是标准字典。和标准字典的update方法不同，该方法添加字典 items，而不是替换它们:
+                    >>> q = QueryDict('a=1')
+
+                    >>> q = q.copy() # to make it mutable
+
+                    >>> q.update({'a': '2'})
+
+                    >>> q.getlist('a')
+
+                     ['1', '2']
+
+                    >>> q['a'] # returns the last
+
+                    ['2']
+                    
+    items()         和标准字典的items()方法有一点不同,该方法使用单值逻辑的__getitem__():
+                    >>> q = QueryDict('a=1&a=2&a=3')
+
+                    >>> q.items()
+
+                    [('a', '3')]
+                    
+    values()        和标准字典的values()方法有一点不同,该方法使用单值逻辑的__getitem__():
+    
+    此外, QueryDict也有一些方法，如下表：
+    
+    方法	            描述
+    copy()          返回对象的拷贝，内部实现是用Python标准库的copy.deepcopy()。该拷贝是mutable(可更改的) — 就是说，可以更改该拷贝的值。
+    getlist(key)    返回和参数key对应的所有值，作为一个Python list返回。如果key不存在，则返回空list。 It's guaranteed to return a list of some sort..
+    setlist(key,list_)  设置key的值为list_ (unlike __setitem__()).
+    appendlist(key,item)    添加item到和key关联的内部list.
+    setlistdefault(key,list)    和setdefault有一点不同，它接受list而不是单个value作为参数。
+    lists()         和items()有一点不同, 它会返回key的所有值，作为一个list, 例如:
+                    >>> q = QueryDict('a=1&a=2&a=3')
+
+                    >>> q.lists()
+
+                    [('a', ['1', '2', '3'])]
+
+    urlencode()     返回一个以查询字符串格式进行格式化后的字符串(e.g., "a=2&b=3&b=5").
+
+
+
 
 20170626：模型
 前言：上次进行安装数据库客户端时废了九牛二虎之力，仍然无法使用，今天再次测试竟然可以使用了，
@@ -341,7 +797,7 @@ HelloWorld/templates/hello.html 文件代码：
 	HelloWorld/wsgi.py: 一个 WSGI 兼容的 Web 服务器的入口，以便运行你的项目。
 5、接下来我们进入 HelloWorld 目录输入以下命令，启动服务器：
 	python manage.py runserver 0.0.0.0:8000
-    注:退出服务器使用Ctrl+break按键
+    注:退出服务器使用Ctrl+break按键;访问本地的主机地址是127.xxx.xxx.xxx，此处使用127.0.0.1
 	0.0.0.0 让其它电脑可连接到开发服务器，8000 为端口号。如果不说明，那么端口号默认为 8000。
 	在浏览器输入你服务器的ip及端口号，如果正常启动，输出结果如下：It Work!
 6、视图和 URL 配置
